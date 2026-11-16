@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: CC-BY-SA-4.0   (tool code only; the book text and figures are copyrighted)
 """Chapter 78: checks of the owner's XC8 rewrite of the GKA-AT68 firmware, by simulation.
 
-usage:  python3 code/ch78/gka-review.py "<X68000-Keyboard-Adapter>/GKA-AT68 NEW/src"
+usage:  python3 code/ch78/gka-review.py "<X68000-Keyboard-Adapter>/GKA-AT68-C/GKA-AT68.X/src"
 
 It reads the key table from keymap.c (the only thing taken from the owner's files: the table's byte values)
 and models three routines statement by statement, written fresh for this book from reading them:

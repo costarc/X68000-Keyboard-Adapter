@@ -40,18 +40,13 @@ void uart_init(void)
 void __interrupt() isr_uart(void)
 {
     if (T0IF) {
-        // Preload for a tick of ~52us (128 cycles) including TMR0-write overhead.
-        // For 9.8304 MHz Fosc, Fcyc=Fosc/4=2.4576 MHz; each TMR0 tick=1/2.4576MHz=0.40625us.
-        // With 1:2 prescaler: tick=0.8125us. 52us/0.8125us ≈ 64 counts.
-        // Increment TMR0 so overflow occurs again in ~64 counts.
-        // Bit rate analysis (Fcyc = 2.4576 MHz, prescaler 1:2, 8 ticks/bit):
-        //  2400 baud = 1024 cycles/bit = 128 cycles/tick.
-        //  A TMR0 write costs: 2-cycle increment inhibit, prescaler cleared (+0..1 cycle).
-        //  Old reload (256-64+3 = 195 -> 61 counts = 122 cyc + ~2.5) = ~124.5 cyc/tick
-        //    -> ~996 cyc/bit = ~2467 baud (+2.8%, too fast).
-        //  New reload 256-63 = 193 -> 63 counts = 126 cyc + ~2.5 = ~128.5 cyc/tick
-        //    -> ~1028 cyc/bit = ~2391 baud (-0.4%).
-        TMR0 += (uint8_t)(256 - 63);
+        // Preload for a ~52us tick (1/8 of a 2400 baud bit).
+        // Fosc 9.8304 MHz -> Fcyc 2.4576 MHz; TMR0 prescaler 1:2 -> 0.8125us per count;
+        // 64 counts = 52.08us. Same reload as the original assembly (100h-TMRCNT+3):
+        // the +3 compensates for the TMR0 write inhibit / prescaler clear, so the
+        // effective period stays close to 64 counts. Not re-derived on hardware here;
+        // verify the TX bit time with a scope (~416.7us per bit).
+        TMR0 += (uint8_t)(256 - 64 + 3);
 
         // TX state machine
         if (tx_bits) {
